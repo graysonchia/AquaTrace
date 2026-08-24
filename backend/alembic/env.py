@@ -1,24 +1,18 @@
-import os
+import asyncio
 import sys
+from logging.config import fileConfig
 from pathlib import Path
 
+from alembic import context
 from dotenv import load_dotenv
+from sqlalchemy.engine import Connection
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 load_dotenv(Path(__file__).resolve().parents[1] / ".env")
 
-import asyncio
-from logging.config import fileConfig
-
-from alembic import context
-from sqlalchemy.engine import Connection
-
 from app.config import settings
 from app.database import engine
 from app.models import Base
-
-# Keep the conventional environment import available for future migration hooks.
-_ = os.environ
 
 config = context.config
 

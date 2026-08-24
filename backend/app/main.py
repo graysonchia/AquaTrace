@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.routers import health
+from app.routers import disclosures, estimator, health, wue
 
 app = FastAPI(title="AquaTrace API")
 app.add_middleware(
@@ -12,3 +12,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 app.include_router(health.router)
+app.include_router(wue.router)
+app.include_router(disclosures.router)
+app.include_router(estimator.router)
