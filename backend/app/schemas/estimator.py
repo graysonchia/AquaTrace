@@ -33,3 +33,19 @@ class EstimatorResponse(BaseModel):
     min_liters: float
     max_liters: float
     spread_ratio: float
+
+
+class PersonalEstimatorRequest(BaseModel):
+    monthly_queries: int = Field(gt=0, le=1_000_000_000_000)
+    methodology_source_name: str | None = Field(
+        default=None,
+        min_length=1,
+        max_length=100,
+    )
+
+
+class PersonalEstimatorResponse(BaseModel):
+    monthly_queries: int
+    methodology_used: str
+    total_liters: float
+    equivalents: dict[str, float]

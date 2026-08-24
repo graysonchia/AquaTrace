@@ -19,12 +19,15 @@ greenlet==3.5.5
 h11==0.16.0
 httptools==0.8.0
 idna==3.19
+joblib==1.5.3
 kombu==5.6.2
 Mako==1.4.1
 MarkupSafe==3.0.3
+narwhals==2.25.0
 numpy==2.4.6
 packaging==26.3
 pandas==3.0.5
+patsy==1.0.2
 pgeocode==0.5.0
 prompt_toolkit==3.0.53
 pydantic==2.13.4
@@ -35,9 +38,13 @@ python-dotenv==1.2.3
 PyYAML==6.0.3
 redis==8.1.0
 requests==2.34.2
+scikit-learn==1.9.0
+scipy==1.17.1
 six==1.17.0
 SQLAlchemy==2.0.52
 starlette==1.6.0
+statsmodels==0.14.6
+threadpoolctl==3.6.0
 typing-inspection==0.4.4
 typing_extensions==4.16.0
 tzdata==2026.3
@@ -48,3 +55,4 @@ vine==5.1.0
 watchfiles==1.2.0
 wcwidth==0.8.2
 websockets==17.0.1
+xgboost==3.2.0

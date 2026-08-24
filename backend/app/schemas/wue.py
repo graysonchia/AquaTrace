@@ -39,3 +39,10 @@ class WueStationSummary(BaseModel):
     avg_offsite_wue: float
     reading_count: int
     source_tier: SourceTier = SourceTier.peer_reviewed
+
+
+class WueStationStressSummary(WueStationSummary):
+    """Station WUE summary with its state-level WRI Aqueduct stress score."""
+
+    stress_category: str | None
+    stress_score: float | None

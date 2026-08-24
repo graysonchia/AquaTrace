@@ -5,8 +5,13 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
-from app.models import WueReading, WueStation
-from app.schemas.wue import WueReadingOut, WueStationOut, WueStationSummary
+from app.models import WaterStressIndex, WueReading, WueStation
+from app.schemas.wue import (
+    WueReadingOut,
+    WueStationOut,
+    WueStationStressSummary,
+    WueStationSummary,
+)
 
 router = APIRouter(prefix="/wue", tags=["wue"])
 
@@ -34,6 +39,38 @@ async def stations_summary(db: AsyncSession = Depends(get_db)):
         )
         .join(WueReading, WueReading.station_id == WueStation.id)
         .group_by(WueStation.id)
+        .order_by(WueStation.state, WueStation.city)
+    )
+    result = await db.execute(statement)
+    return result.mappings().all()
+
+
+@router.get(
+    "/stations/with-stress",
+    response_model=list[WueStationStressSummary],
+)
+async def stations_with_stress(db: AsyncSession = Depends(get_db)):
+    """Return station WUE summaries with state-level Aqueduct water stress."""
+    statement = (
+        select(
+            WueStation.id.label("station_id"),
+            WueStation.city,
+            WueStation.state,
+            WueStation.latitude,
+            WueStation.longitude,
+            func.avg(WueReading.onsite_wue).label("avg_onsite_wue"),
+            func.avg(WueReading.offsite_wue).label("avg_offsite_wue"),
+            func.count(WueReading.id).label("reading_count"),
+            WaterStressIndex.stress_category,
+            WaterStressIndex.stress_score,
+        )
+        .join(WueReading, WueReading.station_id == WueStation.id)
+        .outerjoin(WaterStressIndex, WaterStressIndex.state == WueStation.state)
+        .group_by(
+            WueStation.id,
+            WaterStressIndex.stress_category,
+            WaterStressIndex.stress_score,
+        )
         .order_by(WueStation.state, WueStation.city)
     )
     result = await db.execute(statement)

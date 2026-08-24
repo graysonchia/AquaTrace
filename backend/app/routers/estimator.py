@@ -9,7 +9,10 @@ from app.schemas.estimator import (
     EstimatorResponse,
     EstimatorResult,
     MethodologyOut,
+    PersonalEstimatorRequest,
+    PersonalEstimatorResponse,
 )
+from app.services.equivalents import liters_to_equivalents
 
 router = APIRouter(prefix="/estimator", tags=["estimator"])
 
@@ -63,4 +66,52 @@ async def compare(
         min_liters=min_liters,
         max_liters=max_liters,
         spread_ratio=max_liters / min_liters,
+    )
+
+
+@router.post("/personal", response_model=PersonalEstimatorResponse)
+async def personal_estimate(
+    payload: PersonalEstimatorRequest,
+    db: AsyncSession = Depends(get_db),
+):
+    statement = select(MethodologyCoefficient).order_by(
+        MethodologyCoefficient.ml_per_query,
+        MethodologyCoefficient.source_name,
+    )
+    result = await db.execute(statement)
+    coefficients = result.scalars().all()
+    if not coefficients:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Methodology coefficients have not been configured",
+        )
+
+    if payload.methodology_source_name is not None:
+        coefficient = next(
+            (
+                item
+                for item in coefficients
+                if item.source_name == payload.methodology_source_name
+            ),
+            None,
+        )
+        if coefficient is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Methodology source was not found",
+            )
+        ml_per_query = coefficient.ml_per_query
+        methodology_used = coefficient.source_name
+    else:
+        ml_per_query = sum(
+            coefficient.ml_per_query for coefficient in coefficients
+        ) / len(coefficients)
+        methodology_used = "Average across all methodologies"
+
+    total_liters = (ml_per_query * payload.monthly_queries) / 1000
+    return PersonalEstimatorResponse(
+        monthly_queries=payload.monthly_queries,
+        methodology_used=methodology_used,
+        total_liters=total_liters,
+        equivalents=liters_to_equivalents(total_liters),
     )
