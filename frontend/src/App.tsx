@@ -26,6 +26,11 @@ const EstimatorPage = lazy(() =>
     default: module.EstimatorPage,
   })),
 );
+const EnergyMixPage = lazy(() =>
+  import("./pages/EnergyMixPage").then((module) => ({
+    default: module.EnergyMixPage,
+  })),
+);
 const FacilitiesMapPage = lazy(() =>
   import("./pages/FacilitiesMapPage").then((module) => ({
     default: module.FacilitiesMapPage,
@@ -48,6 +53,7 @@ export default function App() {
             <Routes>
               <Route path="/" element={<OverviewPage />} />
               <Route path="/map" element={<FacilitiesMapPage />} />
+              <Route path="/energy-mix" element={<EnergyMixPage />} />
               <Route path="/disclosures" element={<DisclosuresPage />} />
               <Route path="/estimator" element={<EstimatorPage />} />
               <Route path="/forecast" element={<ForecastPage />} />

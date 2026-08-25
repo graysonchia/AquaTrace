@@ -99,6 +99,35 @@ export interface WaterStress {
   year: number;
 }
 
+export interface EnergyMixSummary {
+  id: number;
+  station_id: number;
+  year: number;
+  avg_coal: number;
+  avg_hydro: number;
+  avg_natural_gas: number;
+  avg_nuclear: number;
+  avg_other: number;
+  avg_petroleum: number;
+  avg_solar: number;
+  avg_wind: number;
+  pct_renewable: number;
+}
+
+export interface StationEnergyCorrelation {
+  station_id: number;
+  city: string;
+  state: string;
+  avg_offsite_wue: number;
+  pct_renewable: number;
+  avg_coal: number;
+  avg_natural_gas: number;
+  avg_hydro: number;
+  avg_nuclear: number;
+  avg_solar: number;
+  avg_wind: number;
+}
+
 export interface CaseStudy {
   title: string;
   region: string;
@@ -180,6 +209,14 @@ export const api = {
   getWaterStress: () =>
     apiClient
       .get<WaterStress[]>("/water-stress/by-region")
+      .then((response) => response.data),
+  getEnergyMixByStation: () =>
+    apiClient
+      .get<EnergyMixSummary[]>("/energy-mix/by-station")
+      .then((response) => response.data),
+  getEnergyMixCorrelation: () =>
+    apiClient
+      .get<StationEnergyCorrelation[]>("/energy-mix/correlation")
       .then((response) => response.data),
   getCaseStudies: () =>
     apiClient

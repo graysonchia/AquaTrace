@@ -7,6 +7,7 @@ class Base(DeclarativeBase):
 
 from app.models.case_study import CaseStudy  # noqa: E402, F401
 from app.models.disclosure import CorporateDisclosure  # noqa: E402, F401
+from app.models.energy_mix import EnergyMixSummary  # noqa: E402, F401
 from app.models.facility import SourceTier, WueReading, WueStation  # noqa: E402, F401
 from app.models.forecast import (  # noqa: E402, F401
     ForecastScenario,
@@ -22,6 +23,7 @@ __all__ = [
     "Base",
     "CaseStudy",
     "CorporateDisclosure",
+    "EnergyMixSummary",
     "ForecastScenario",
     "MethodologyCoefficient",
     "Scope",
