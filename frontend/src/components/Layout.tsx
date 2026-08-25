@@ -15,35 +15,42 @@ export function Layout({ children }: { children: ReactNode }) {
   const location = useLocation();
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-950">
-      <header className="border-b border-slate-200 bg-white">
-        <nav
-          aria-label="Primary navigation"
-          className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-6 gap-y-3 px-6 py-4"
-        >
-          <Link className="mr-2 text-lg font-bold tracking-tight" to="/">
+    <div className="min-h-screen bg-paper text-ink">
+      <div
+        aria-hidden="true"
+        className="pointer-events-none fixed inset-y-0 left-0 z-30 hidden w-6 border-r border-well/5 py-3 lg:flex lg:flex-col lg:justify-between"
+      >
+        {Array.from({ length: 41 }).map((_, index) => (
+          <span
+            className={`block h-px bg-well/10 ${index % 5 === 0 ? "w-4" : "w-2.5"}`}
+            key={index}
+          />
+        ))}
+      </div>
+      <nav
+        aria-label="Primary navigation"
+        className="bg-paper border-b border-well/15 px-6 py-4"
+      >
+        <div className="flex flex-wrap items-center gap-6 max-w-6xl mx-auto">
+          <span className="font-display font-bold text-lg text-well tracking-tight">
             AquaTrace
-          </Link>
-          {NAV_ITEMS.map((item) => {
-            const isActive = location.pathname === item.path;
-
-            return (
-              <Link
-                aria-current={isActive ? "page" : undefined}
-                className={`text-sm transition-colors hover:text-blue-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 ${
-                  isActive
-                    ? "font-medium text-blue-600"
-                    : "text-slate-600"
-                }`}
-                key={item.path}
-                to={item.path}
-              >
-                {item.label}
-              </Link>
-            );
-          })}
-        </nav>
-      </header>
+          </span>
+          {NAV_ITEMS.map((item) => (
+            <Link
+              aria-current={location.pathname === item.path ? "page" : undefined}
+              className={`font-mono text-xs uppercase tracking-wide ${
+                location.pathname === item.path
+                  ? "text-river font-medium"
+                  : "text-well/50"
+              }`}
+              key={item.path}
+              to={item.path}
+            >
+              {item.label}
+            </Link>
+          ))}
+        </div>
+      </nav>
       <main className="mx-auto max-w-6xl px-6 py-8">{children}</main>
     </div>
   );

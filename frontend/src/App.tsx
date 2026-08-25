@@ -3,6 +3,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 
 import { Layout } from "./components/Layout";
+import { InstrumentLoading } from "./components/InstrumentLoading";
 import { OverviewPage } from "./pages/OverviewPage";
 
 const CalculatorPage = lazy(() =>
@@ -61,10 +62,5 @@ export default function App() {
 }
 
 function RouteLoadingState() {
-  return (
-    <div
-      aria-label="Loading page"
-      className="h-48 animate-pulse rounded-xl border border-slate-200 bg-white"
-    />
-  );
+  return <InstrumentLoading className="rounded-sm border border-well/15" />;
 }

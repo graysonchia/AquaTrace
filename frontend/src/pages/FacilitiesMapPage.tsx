@@ -3,6 +3,8 @@ import "leaflet/dist/leaflet.css";
 import { CircleMarker, MapContainer, Popup, TileLayer } from "react-leaflet";
 
 import { api, type WueStationWithStress } from "../api/endpoints";
+import { GaugeDivider } from "../components/GaugeDivider";
+import { InstrumentLoading } from "../components/InstrumentLoading";
 import { SourceTierBadge } from "../components/SourceTierBadge";
 
 const STRESS_COLORS: Record<string, string> = {
@@ -43,23 +45,25 @@ export function FacilitiesMapPage() {
   const mappableStations = stations.filter(isMappableStation);
 
   return (
-    <div className="space-y-5">
-      <div>
-        <p className="mb-2 text-sm font-semibold uppercase tracking-wider text-blue-600">
+    <div className="space-y-6">
+      <div className="max-w-3xl">
+        <p className="mb-2 font-mono text-xs uppercase tracking-widest text-river">
           58-city research dataset
         </p>
-        <h1 className="text-3xl font-bold tracking-tight text-slate-950">
+        <h1 className="font-display text-3xl font-bold tracking-tight text-well">
           Facilities Map — WUE × Water Stress
         </h1>
-        <p className="mt-2 max-w-3xl text-slate-600">
+        <p className="mt-2 max-w-3xl font-serif text-ink/70">
           Explore station-level water-use effectiveness alongside regional water
           stress. Select a marker for measurements and source quality.
         </p>
       </div>
 
+      <GaugeDivider label="Water Stress Legend" />
+
       <div
         aria-label="Water stress legend"
-        className="flex flex-wrap gap-x-5 gap-y-2 rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700"
+        className="flex flex-wrap gap-x-5 gap-y-2 rounded-sm border border-well/15 bg-paper px-4 py-3 font-serif text-sm text-ink/70"
       >
         {Object.entries(STRESS_COLORS).map(([label, color]) => (
           <div className="flex items-center gap-1.5" key={label}>
@@ -81,8 +85,10 @@ export function FacilitiesMapPage() {
         </div>
       </div>
 
+      <GaugeDivider label="Station Map" />
+
       {mappableStations.length > 0 ? (
-        <div className="h-[600px] min-h-[420px] overflow-hidden rounded-xl border border-slate-200 bg-slate-100 shadow-sm">
+        <div className="h-[600px] min-h-[420px] overflow-hidden rounded-sm border border-well/15 bg-shallow/20">
           <MapContainer
             center={[39.5, -98.35]}
             className="h-full w-full"
@@ -90,8 +96,8 @@ export function FacilitiesMapPage() {
             zoom={4}
           >
             <TileLayer
-              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
+              url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
             />
             {mappableStations.map((station) => {
               const markerColor =
@@ -111,14 +117,14 @@ export function FacilitiesMapPage() {
                   radius={8}
                 >
                   <Popup>
-                    <div className="min-w-52 space-y-1.5 text-sm text-slate-700">
-                      <div className="font-semibold text-slate-950">
+                    <div className="min-w-52 space-y-1.5 font-serif text-sm text-ink/70">
+                      <div className="font-display font-bold text-well">
                         {station.city}, {station.state}
                       </div>
-                      <div>
+                      <div className="font-mono">
                         Onsite WUE: {station.avg_onsite_wue.toFixed(2)} L/kWh
                       </div>
-                      <div>
+                      <div className="font-mono">
                         Offsite WUE: {station.avg_offsite_wue.toFixed(2)} L/kWh
                       </div>
                       <div>
@@ -142,8 +148,11 @@ export function FacilitiesMapPage() {
       )}
 
       {mappableStations.length < stations.length && (
-        <p className="text-xs text-slate-500">
-          {stations.length - mappableStations.length} station
+        <p className="font-serif text-xs text-ink/60">
+          <span className="font-mono">
+            {stations.length - mappableStations.length}
+          </span>{" "}
+          station
           {stations.length - mappableStations.length === 1 ? " was" : "s were"} omitted
           because coordinates were unavailable.
         </p>
@@ -159,22 +168,14 @@ function isMappableStation(
 }
 
 function MapLoadingState() {
-  return (
-    <div aria-busy="true" aria-label="Loading facilities map" className="space-y-5">
-      <div className="space-y-3">
-        <div className="h-4 w-44 animate-pulse rounded bg-slate-200" />
-        <div className="h-9 w-full max-w-xl animate-pulse rounded bg-slate-200" />
-      </div>
-      <div className="h-[600px] min-h-[420px] animate-pulse rounded-xl border border-slate-200 bg-slate-200" />
-    </div>
-  );
+  return <InstrumentLoading className="rounded-sm border border-well/15" />;
 }
 
 function MapMessage({ title, message }: { title: string; message: string }) {
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-6">
-      <h1 className="font-semibold text-slate-900">{title}</h1>
-      <p className="mt-1 text-sm text-slate-600">{message}</p>
+    <div className="rounded-sm border border-well/15 bg-paper p-6">
+      <h1 className="font-display font-bold text-well">{title}</h1>
+      <p className="mt-1 font-serif text-sm text-ink/70">{message}</p>
     </div>
   );
 }

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useReducedMotion } from "framer-motion";
 import {
   Area,
   CartesianGrid,
@@ -13,6 +14,16 @@ import {
 } from "recharts";
 
 import { api, type ForecastPoint } from "../api/endpoints";
+import {
+  InstrumentLegend,
+  InstrumentTooltip,
+} from "../components/ChartTheme";
+import {
+  CHART_GRID_STROKE,
+  CHART_TICK,
+} from "../components/chartStyles";
+import { GaugeDivider } from "../components/GaugeDivider";
+import { InstrumentLoading } from "../components/InstrumentLoading";
 import { SourceTierBadge } from "../components/SourceTierBadge";
 
 const SCENARIO_LABELS: Record<ForecastPoint["scenario"], string> = {
@@ -21,8 +32,8 @@ const SCENARIO_LABELS: Record<ForecastPoint["scenario"], string> = {
 };
 
 const SCENARIO_COLORS: Record<ForecastPoint["scenario"], string> = {
-  efficiency_improves: "#16a34a",
-  demand_outpaces: "#dc2626",
+  efficiency_improves: "#1C6E8C",
+  demand_outpaces: "#C1440E",
 };
 
 type Scenario = ForecastPoint["scenario"];
@@ -36,6 +47,7 @@ interface ForecastChartRow {
 }
 
 export function ForecastPage() {
+  const shouldReduceMotion = useReducedMotion();
   const [scenario, setScenario] = useState<Scenario | undefined>();
   const forecastQuery = useQuery({
     queryKey: ["forecast", scenario ?? "both"],
@@ -47,15 +59,15 @@ export function ForecastPage() {
   return (
     <div className="space-y-6">
       <div className="max-w-3xl">
-        <p className="mb-2 text-sm font-semibold uppercase tracking-wider text-blue-600">
+        <p className="mb-2 font-mono text-xs uppercase tracking-widest text-river">
           Scenario exploration
         </p>
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <h1 className="mb-2 text-3xl font-bold tracking-tight text-slate-950">
+            <h1 className="mb-2 font-display text-3xl font-bold tracking-tight text-well">
               Water Demand Forecast
             </h1>
-            <p className="text-slate-600">
+            <p className="font-serif text-ink/70">
               National average offsite WUE projected under two scenarios. Built
               on five years of real data—treat this as a scenario illustration,
               not a precise prediction.
@@ -66,6 +78,8 @@ export function ForecastPage() {
           </span>
         </div>
       </div>
+
+      <GaugeDivider label="Scenario Selection" />
 
       <div aria-label="Forecast scenario filter" className="flex flex-wrap gap-2">
         <ScenarioButton
@@ -85,12 +99,11 @@ export function ForecastPage() {
         )}
       </div>
 
-      <section className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:p-6">
+      <GaugeDivider label="Projected WUE" />
+
+      <section className="rounded-sm border border-well/15 bg-paper p-4 sm:p-6">
         {forecastQuery.isLoading ? (
-          <div
-            aria-label="Loading forecast"
-            className="h-[400px] animate-pulse rounded-lg bg-slate-100"
-          />
+          <InstrumentLoading className="h-[400px]" />
         ) : forecastQuery.isError ? (
           <ChartMessage
             title="The forecast could not be loaded"
@@ -104,7 +117,7 @@ export function ForecastPage() {
         ) : (
           <div
             aria-label="Line chart comparing projected offsite water-use effectiveness scenarios"
-            className={`h-[400px] transition-opacity ${forecastQuery.isFetching ? "opacity-60" : "opacity-100"}`}
+            className={`h-[400px] font-mono transition-opacity ${forecastQuery.isFetching ? "opacity-60" : "opacity-100"}`}
             role="img"
           >
             <ResponsiveContainer height="100%" width="100%">
@@ -112,40 +125,46 @@ export function ForecastPage() {
                 data={chartData}
                 margin={{ bottom: 8, left: 18, right: 18, top: 8 }}
               >
-                <CartesianGrid stroke="#e2e8f0" strokeDasharray="3 3" />
+                <CartesianGrid
+                  stroke={CHART_GRID_STROKE}
+                  strokeDasharray="3 3"
+                />
                 <XAxis
                   dataKey="year"
-                  tick={{ fill: "#64748b", fontSize: 12 }}
+                  tick={CHART_TICK}
                 />
                 <YAxis
                   domain={["auto", "auto"]}
                   label={{
                     angle: -90,
-                    fill: "#64748b",
+                    fill: "#0B314299",
+                    fontFamily: "IBM Plex Mono, monospace",
                     position: "insideLeft",
                     value: "Offsite WUE (L/kWh)",
                   }}
-                  tick={{ fill: "#64748b", fontSize: 12 }}
+                  tick={CHART_TICK}
                 />
                 <Tooltip
-                  formatter={(value, name) => {
-                    if (Array.isArray(value)) {
-                      return [
-                        `${Number(value[0]).toFixed(2)}–${Number(value[1]).toFixed(2)} L/kWh`,
-                        name,
-                      ];
-                    }
-                    return [`${Number(value).toFixed(2)} L/kWh`, name];
-                  }}
-                  labelFormatter={(year) => `Year ${year}`}
+                  content={
+                    <InstrumentTooltip
+                      formatLabel={(label) => `Year ${String(label)}`}
+                      formatValue={(value) => {
+                        if (Array.isArray(value)) {
+                          return `${Number(value[0]).toFixed(2)}–${Number(value[1]).toFixed(2)} L/kWh`;
+                        }
+                        return `${Number(value).toFixed(2)} L/kWh`;
+                      }}
+                    />
+                  }
                 />
-                <Legend />
+                <Legend content={<InstrumentLegend />} />
                 {(!scenario || scenario === "efficiency_improves") && (
                   <>
                     <Area
                       dataKey="efficiency_improves_band"
                       fill={SCENARIO_COLORS.efficiency_improves}
                       fillOpacity={0.13}
+                      isAnimationActive={!shouldReduceMotion}
                       legendType="none"
                       name="Efficiency range"
                       stroke="none"
@@ -155,6 +174,7 @@ export function ForecastPage() {
                       connectNulls
                       dataKey="efficiency_improves_predicted"
                       dot={{ r: 3 }}
+                      isAnimationActive={!shouldReduceMotion}
                       name={SCENARIO_LABELS.efficiency_improves}
                       stroke={SCENARIO_COLORS.efficiency_improves}
                       strokeWidth={3}
@@ -168,6 +188,7 @@ export function ForecastPage() {
                       dataKey="demand_outpaces_band"
                       fill={SCENARIO_COLORS.demand_outpaces}
                       fillOpacity={0.13}
+                      isAnimationActive={!shouldReduceMotion}
                       legendType="none"
                       name="Demand range"
                       stroke="none"
@@ -177,6 +198,7 @@ export function ForecastPage() {
                       connectNulls
                       dataKey="demand_outpaces_predicted"
                       dot={{ r: 3 }}
+                      isAnimationActive={!shouldReduceMotion}
                       name={SCENARIO_LABELS.demand_outpaces}
                       stroke={SCENARIO_COLORS.demand_outpaces}
                       strokeWidth={3}
@@ -190,7 +212,9 @@ export function ForecastPage() {
         )}
       </section>
 
-      <p className="rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-xs leading-5 text-slate-600">
+      <GaugeDivider label="Model Context" />
+
+      <p className="rounded-sm border border-well/15 bg-shallow/20 px-4 py-3 font-serif text-xs leading-5 text-ink/70">
         With only five years of historical data, these scenarios are modeled
         projections applying a divergence factor to a single fitted trend—not two
         independently trained models. Shaded regions show each projection&apos;s
@@ -212,10 +236,10 @@ function ScenarioButton({
   return (
     <button
       aria-pressed={active}
-      className={`rounded-lg border px-3 py-1.5 text-sm font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 ${
+      className={`rounded-sm border border-transparent px-3 py-2 font-mono text-xs font-medium uppercase tracking-wide text-white transition hover:bg-well focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-river focus-visible:ring-offset-2 ${
         active
-          ? "border-blue-600 bg-blue-600 text-white"
-          : "border-slate-300 bg-white text-slate-700 hover:border-blue-300 hover:text-blue-700"
+          ? "bg-well"
+          : "bg-river"
       }`}
       onClick={onClick}
       type="button"
@@ -249,8 +273,8 @@ function ChartMessage({ title, message }: { title: string; message: string }) {
   return (
     <div className="flex h-[400px] items-center justify-center text-center">
       <div>
-        <h2 className="font-semibold text-slate-900">{title}</h2>
-        <p className="mt-1 text-sm text-slate-600">{message}</p>
+        <h2 className="font-display font-bold text-well">{title}</h2>
+        <p className="mt-1 font-serif text-sm text-ink/70">{message}</p>
       </div>
     </div>
   );

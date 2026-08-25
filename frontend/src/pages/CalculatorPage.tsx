@@ -2,6 +2,7 @@ import { useState, type FormEvent } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 
 import { api } from "../api/endpoints";
+import { GaugeDivider } from "../components/GaugeDivider";
 import { SourceTierBadge } from "../components/SourceTierBadge";
 
 const EQUIVALENT_LABELS: Record<string, { label: string; emoji: string }> = {
@@ -38,32 +39,34 @@ export function CalculatorPage() {
   return (
     <div className="space-y-6">
       <div className="max-w-3xl">
-        <p className="mb-2 text-sm font-semibold uppercase tracking-wider text-blue-600">
+        <p className="mb-2 font-mono text-xs uppercase tracking-widest text-river">
           Make the scale tangible
         </p>
-        <h1 className="mb-2 text-3xl font-bold tracking-tight text-slate-950">
+        <h1 className="mb-2 font-display text-3xl font-bold tracking-tight text-well">
           Your Personal Footprint
         </h1>
-        <p className="text-slate-600">
+        <p className="font-serif text-ink/70">
           Estimate your own AI usage&apos;s water footprint, translated into
           familiar everyday equivalents.
         </p>
       </div>
 
-      <section className="space-y-6 rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+      <GaugeDivider label="Usage Inputs" />
+
+      <section className="space-y-6 rounded-sm border border-well/15 bg-paper p-6">
         <form
           className="flex flex-col items-stretch gap-4 md:flex-row md:items-end"
           onSubmit={handleSubmit}
         >
           <div className="flex-1 md:max-w-56">
             <label
-              className="mb-1 block text-sm font-medium text-slate-700"
+              className="mb-1 block font-display text-sm font-medium text-well"
               htmlFor="monthly-queries"
             >
               Queries per month
             </label>
             <input
-              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-950 shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+              className="w-full rounded-sm border border-well/25 px-3 py-2 font-mono text-ink outline-none transition focus:border-river focus:ring-2 focus:ring-shallow/40"
               id="monthly-queries"
               max={1_000_000_000_000}
               min={1}
@@ -75,13 +78,13 @@ export function CalculatorPage() {
           </div>
           <div className="flex-1 md:max-w-sm">
             <label
-              className="mb-1 block text-sm font-medium text-slate-700"
+              className="mb-1 block font-display text-sm font-medium text-well"
               htmlFor="personal-methodology"
             >
               Methodology
             </label>
             <select
-              className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-950 shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100 disabled:bg-slate-100"
+              className="w-full rounded-sm border border-well/25 bg-paper px-3 py-2 font-mono text-ink outline-none transition focus:border-river focus:ring-2 focus:ring-shallow/40 disabled:bg-shallow/20"
               disabled={methodologiesQuery.isLoading}
               id="personal-methodology"
               onChange={(event) => setMethodology(event.target.value || undefined)}
@@ -96,7 +99,7 @@ export function CalculatorPage() {
             </select>
           </div>
           <button
-            className="rounded-lg bg-blue-600 px-5 py-2 font-medium text-white shadow-sm transition hover:bg-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:bg-slate-300"
+            className="rounded-sm bg-river px-5 py-2 font-mono text-xs font-medium uppercase tracking-wide text-white transition hover:bg-well focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-river focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:bg-well/25"
             disabled={!inputIsValid || calculationMutation.isPending}
             type="submit"
           >
@@ -105,26 +108,27 @@ export function CalculatorPage() {
         </form>
 
         {methodologiesQuery.isError && (
-          <p className="text-sm text-amber-700">
+          <p className="font-serif text-sm text-drought">
             Methodology choices could not be loaded. The average calculation is
             still available.
           </p>
         )}
         {calculationMutation.isError && (
-          <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+          <div className="rounded-sm border border-drought/30 bg-drought/5 p-4 font-serif text-sm text-drought">
             Your footprint could not be calculated. Check that the API is running
             and try again.
           </div>
         )}
 
         {result && (
-          <div className="border-t border-slate-100 pt-6">
+          <div>
+            <GaugeDivider label="Monthly Footprint" />
             <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
               <div>
-                <div className="text-4xl font-bold tracking-tight text-slate-950">
+                <div className="mt-5 font-mono text-5xl font-bold tracking-tight text-well">
                   {formatValue(result.total_liters)} liters
                 </div>
-                <div className="mt-1 text-sm text-slate-500">
+                <div className="mt-1 font-serif text-sm text-ink/60">
                   per month, based on {result.methodology_used}
                 </div>
               </div>
@@ -142,16 +146,16 @@ export function CalculatorPage() {
 
                 return (
                   <article
-                    className="rounded-xl border border-slate-200 bg-slate-50 p-4 text-center"
+                    className="rounded-sm border border-well/10 bg-shallow/20 p-4 text-center"
                     key={key}
                   >
                     <div aria-hidden="true" className="mb-2 text-2xl">
                       {meta.emoji}
                     </div>
-                    <div className="font-semibold text-slate-950">
+                    <div className="font-mono font-semibold text-well">
                       {formatValue(value)}
                     </div>
-                    <div className="mt-1 text-xs leading-4 text-slate-500">
+                    <div className="mt-1 font-serif text-xs leading-4 text-ink/60">
                       {meta.label}
                     </div>
                   </article>
@@ -162,7 +166,9 @@ export function CalculatorPage() {
         )}
       </section>
 
-      <p className="text-xs leading-5 text-slate-500">
+      <GaugeDivider label="Method Note" />
+
+      <p className="font-serif text-xs leading-5 text-ink/60">
         This calculator multiplies usage by a published per-query coefficient.
         It is an illustrative estimate, not a measurement of your specific device,
         model, data center, or electricity supply.

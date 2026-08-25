@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { useReducedMotion } from "framer-motion";
 import {
   CartesianGrid,
   Legend,
@@ -11,15 +12,26 @@ import {
 } from "recharts";
 
 import { api, type CorporateDisclosure } from "../api/endpoints";
+import {
+  InstrumentLegend,
+  InstrumentTooltip,
+} from "../components/ChartTheme";
+import {
+  CHART_GRID_STROKE,
+  CHART_TICK,
+} from "../components/chartStyles";
+import { GaugeDivider } from "../components/GaugeDivider";
+import { InstrumentLoading } from "../components/InstrumentLoading";
 import { SourceTierBadge } from "../components/SourceTierBadge";
 
 const COMPANY_COLORS: Record<string, string> = {
-  Google: "#4285F4",
-  Microsoft: "#00A4EF",
-  "Amazon (AWS)": "#FF9900",
+  Google: "#1C6E8C",
+  Microsoft: "#0B3142",
+  "Amazon (AWS)": "#A6D8D4",
 };
 
 export function DisclosuresPage() {
+  const shouldReduceMotion = useReducedMotion();
   const disclosuresQuery = useQuery({
     queryKey: ["replenishment-progress"],
     queryFn: api.getReplenishmentProgress,
@@ -64,25 +76,29 @@ export function DisclosuresPage() {
   return (
     <div className="space-y-6">
       <div className="max-w-3xl">
-        <p className="mb-2 text-sm font-semibold uppercase tracking-wider text-blue-600">
+        <p className="mb-2 font-mono text-xs uppercase tracking-widest text-river">
           Company-reported evidence
         </p>
-        <h1 className="mb-2 text-3xl font-bold tracking-tight text-slate-950">
+        <h1 className="mb-2 font-display text-3xl font-bold tracking-tight text-well">
           Corporate Water Disclosures
         </h1>
-        <p className="text-slate-600">
+        <p className="font-serif text-ink/70">
           Publicly reported withdrawal, consumption, and replenishment figures
           from company sustainability reports.
         </p>
       </div>
 
+      <GaugeDivider label="Replenishment Trends" />
+
       {disclosures.length > 0 ? (
         <>
-          <section className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:p-6">
+          <section className="rounded-sm border border-well/15 bg-paper p-4 sm:p-6">
             <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
               <div>
-                <h2 className="text-lg font-semibold">Water Replenishment Progress</h2>
-                <p className="mt-1 text-sm text-slate-500">
+                <h2 className="font-display text-lg font-bold text-well">
+                  Water Replenishment Progress
+                </h2>
+                <p className="mt-1 font-serif text-sm text-ink/60">
                   Percentage progress reported by companies that publish this metric.
                 </p>
               </div>
@@ -94,7 +110,7 @@ export function DisclosuresPage() {
             {chartCompanies.length > 0 ? (
               <div
                 aria-label="Line chart of corporate water replenishment percentages by year"
-                className="h-80"
+                className="h-80 font-mono"
                 role="img"
               >
                 <ResponsiveContainer height="100%" width="100%">
@@ -102,36 +118,44 @@ export function DisclosuresPage() {
                     data={chartData}
                     margin={{ bottom: 8, left: 12, right: 18, top: 8 }}
                   >
-                    <CartesianGrid stroke="#e2e8f0" strokeDasharray="3 3" />
+                    <CartesianGrid
+                      stroke={CHART_GRID_STROKE}
+                      strokeDasharray="3 3"
+                    />
                     <XAxis
                       dataKey="year"
-                      tick={{ fill: "#64748b", fontSize: 12 }}
+                      tick={CHART_TICK}
                     />
                     <YAxis
                       domain={[0, 100]}
                       label={{
                         angle: -90,
-                        fill: "#64748b",
+                        fill: "#0B314299",
+                        fontFamily: "IBM Plex Mono, monospace",
                         position: "insideLeft",
                         value: "Replenishment %",
                       }}
-                      tick={{ fill: "#64748b", fontSize: 12 }}
+                      tick={CHART_TICK}
                     />
                     <Tooltip
-                      formatter={(value, name) => [
-                        `${Number(value).toFixed(1)}%`,
-                        name,
-                      ]}
-                      labelFormatter={(year) => `Year ${year}`}
+                      content={
+                        <InstrumentTooltip
+                          formatLabel={(label) => `Year ${String(label)}`}
+                          formatValue={(value) =>
+                            `${Number(value).toFixed(1)}%`
+                          }
+                        />
+                      }
                     />
-                    <Legend />
+                    <Legend content={<InstrumentLegend />} />
                     {chartCompanies.map((company) => (
                       <Line
                         connectNulls
                         dataKey={company}
                         dot={{ r: 4 }}
+                        isAnimationActive={!shouldReduceMotion}
                         key={company}
-                        stroke={COMPANY_COLORS[company] ?? "#94a3b8"}
+                        stroke={COMPANY_COLORS[company] ?? "#0B314280"}
                         strokeWidth={3}
                         type="monotone"
                       />
@@ -145,11 +169,13 @@ export function DisclosuresPage() {
                 message="The disclosures contain no values for this chart."
               />
             )}
-            <p className="mt-3 text-xs leading-5 text-slate-500">
+            <p className="mt-3 font-serif text-xs leading-5 text-ink/60">
               Not all companies report replenishment percentage every year. Gaps
               reflect missing disclosures, not zero progress.
             </p>
           </section>
+
+          <GaugeDivider label="Full Disclosure Log" />
 
           <DisclosureTable disclosures={disclosures} />
         </>
@@ -169,13 +195,13 @@ function DisclosureTable({
   disclosures: CorporateDisclosure[];
 }) {
   return (
-    <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-      <div className="border-b border-slate-200 px-4 py-4 sm:px-6">
-        <h2 className="font-semibold text-slate-950">Reported figures</h2>
+    <section className="overflow-hidden rounded-sm border border-well/15 bg-paper">
+      <div className="border-b border-well/15 px-4 py-4 sm:px-6">
+        <h2 className="font-display font-bold text-well">Reported figures</h2>
       </div>
       <div className="overflow-x-auto">
         <table className="min-w-[920px] w-full text-sm">
-          <thead className="bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500">
+          <thead className="bg-shallow/20 text-left font-mono text-xs uppercase tracking-wide text-well/60">
             <tr>
               <th className="px-4 py-3 font-semibold" scope="col">Company</th>
               <th className="px-4 py-3 font-semibold" scope="col">Year</th>
@@ -185,20 +211,20 @@ function DisclosureTable({
               <th className="px-4 py-3 font-semibold" scope="col">Source</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100">
+          <tbody className="divide-y divide-well/10">
             {disclosures.map((disclosure) => (
-              <tr className="text-slate-700 hover:bg-slate-50" key={`${disclosure.company}-${disclosure.year}`}>
-                <td className="whitespace-nowrap px-4 py-3 font-medium text-slate-950">
+              <tr className="font-serif text-ink/70 hover:bg-shallow/10" key={`${disclosure.company}-${disclosure.year}`}>
+                <td className="whitespace-nowrap px-4 py-3 font-semibold text-ink">
                   {disclosure.company}
                 </td>
-                <td className="px-4 py-3">{disclosure.year}</td>
-                <td className="px-4 py-3 tabular-nums">
+                <td className="px-4 py-3 font-mono">{disclosure.year}</td>
+                <td className="px-4 py-3 font-mono tabular-nums">
                   {formatGallons(disclosure.withdrawal_gal)}
                 </td>
-                <td className="px-4 py-3 tabular-nums">
+                <td className="px-4 py-3 font-mono tabular-nums">
                   {formatGallons(disclosure.consumption_gal)}
                 </td>
-                <td className="px-4 py-3 tabular-nums">
+                <td className="px-4 py-3 font-mono tabular-nums">
                   {disclosure.replenishment_pct === null
                     ? "—"
                     : `${disclosure.replenishment_pct.toLocaleString()}%`}
@@ -207,7 +233,7 @@ function DisclosureTable({
                   <div className="flex items-center gap-2">
                     <SourceTierBadge tier={disclosure.source_tier} />
                     <a
-                      className="text-xs font-medium text-blue-600 underline decoration-blue-300 underline-offset-4 hover:text-blue-700"
+                      className="font-mono text-xs font-medium uppercase tracking-wide text-river underline decoration-shallow underline-offset-4 hover:text-well"
                       href={disclosure.source_url}
                       rel="noreferrer"
                       target="_blank"
@@ -226,23 +252,14 @@ function DisclosureTable({
 }
 
 function DisclosuresLoadingState() {
-  return (
-    <div aria-busy="true" aria-label="Loading corporate disclosures" className="space-y-6">
-      <div className="space-y-3">
-        <div className="h-4 w-48 animate-pulse rounded bg-slate-200" />
-        <div className="h-9 w-full max-w-lg animate-pulse rounded bg-slate-200" />
-      </div>
-      <div className="h-96 animate-pulse rounded-xl border border-slate-200 bg-white" />
-      <div className="h-72 animate-pulse rounded-xl border border-slate-200 bg-white" />
-    </div>
-  );
+  return <InstrumentLoading className="rounded-sm border border-well/15" />;
 }
 
 function PageMessage({ title, message }: { title: string; message: string }) {
   return (
-    <div className="rounded-xl border border-slate-200 bg-slate-50 p-6 text-center">
-      <h2 className="font-semibold text-slate-900">{title}</h2>
-      <p className="mt-1 text-sm text-slate-600">{message}</p>
+    <div className="rounded-sm border border-well/15 bg-paper p-6 text-center">
+      <h2 className="font-display font-bold text-well">{title}</h2>
+      <p className="mt-1 font-serif text-sm text-ink/70">{message}</p>
     </div>
   );
 }
